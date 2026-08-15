@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EduGuard AI | Smart Exam Proctoring</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <header class="navbar">
+
+        <div class="logo">
+            <span class="logo-icon">🛡️</span>
+            <span>EduGuard AI</span>
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            AI SYSTEM ONLINE
+        </div>
+
+    </header>
+
+
+    <main class="main-container">
+
+        <section class="hero">
+
+            <div>
+                <p class="badge">
+                    AI-POWERED EXAM PROCTORING
+                </p>
+
+                <h1>
+                    Intelligent Exam
+                    <span>Behavior Analysis</span>
+                </h1>
+
+                <p class="hero-text">
+                    Analyze examination behavior using eye-gaze,
+                    audio activity, tab switching and temporal
+                    behavioral patterns.
+                </p>
+            </div>
+
+        </section>
+
+
+        <section class="dashboard">
+
+            <div class="card input-card">
+
+                <div class="card-header">
+
+                    <div>
+                        <h2>Behavior Analysis</h2>
+
+                        <p>
+                            Enter the current telemetry values
+                            for AI analysis.
+                        </p>
+                    </div>
+
+                    <div class="ai-icon">
+                        AI
+                    </div>
+
+                </div>
+
+
+                <form action="/predict"
+                      method="POST"
+                      class="prediction-form">
+
+
+                    <div class="form-group">
+
+                        <label for="eye_gaze_angle">
+                            Eye Gaze Angle
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="number"
+                                step="any"
+                                id="eye_gaze_angle"
+                                name="eye_gaze_angle"
+                                placeholder="Enter gaze angle"
+                                required
+                            >
+
+                            <span>°</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="audio_db">
+                            Audio Level
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="number"
+                                step="any"
+                                id="audio_db"
+                                name="audio_db"
+                                placeholder="Enter audio level"
+                                required
+                            >
+
+                            <span>dB</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="tab_switches">
+                            Tab Switches
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="number"
+                                min="0"
+                                id="tab_switches"
+                                name="tab_switches"
+                                placeholder="Number of switches"
+                                required
+                            >
+
+                            <span>times</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="gaze_rolling_10s">
+                            10-Second Gaze Average
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="number"
+                                step="any"
+                                id="gaze_rolling_10s"
+                                name="gaze_rolling_10s"
+                                placeholder="Rolling gaze average"
+                                required
+                            >
+
+                            <span>°</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="audio_rolling_10s">
+                            10-Second Audio Maximum
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <input
+                                type="number"
+                                step="any"
+                                id="audio_rolling_10s"
+                                name="audio_rolling_10s"
+                                placeholder="Rolling audio maximum"
+                                required
+                            >
+
+                            <span>dB</span>
+
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="analyze-button">
+
+                        <span>Analyze with AI</span>
+
+                        <span class="arrow">
+                            →
+                        </span>
+
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <div class="card result-card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h2>AI Analysis Result</h2>
+
+                        <p>
+                            Random Forest behavioral analysis
+                        </p>
+
+                    </div>
+
+                    <div class="model-badge">
+                        RF
+                    </div>
+
+                </div>
+
+
+                {% if result %}
+
+                    <div class="result-content">
+
+                        {% if result == "SUSPICIOUS" %}
+
+                            <div class="result-icon suspicious">
+                                ⚠
+                            </div>
+
+                            <div class="result-status suspicious-text">
+                                SUSPICIOUS
+                            </div>
+
+                            <p class="result-description">
+                                The AI model detected behavioral
+                                patterns that exceed the configured
+                                decision threshold.
+                            </p>
+
+                        {% else %}
+
+                            <div class="result-icon safe">
+                                ✓
+                            </div>
+
+                            <div class="result-status safe-text">
+                                NOT SUSPICIOUS
+                            </div>
+
+                            <p class="result-description">
+                                The analyzed behavioral signals
+                                remain below the configured
+                                suspicion threshold.
+                            </p>
+
+                        {% endif %}
+
+
+                        <div class="probability-box">
+
+                            <div class="probability-header">
+
+                                <span>
+                                    Cheating Probability
+                                </span>
+
+                                <strong>
+                                    {{ probability }}%
+                                </strong>
+
+                            </div>
+
+
+                            <div class="progress">
+
+                                <div
+                                    class="progress-bar"
+                                    style="width: {{ probability }}%;">
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="metrics">
+
+                            <div class="metric">
+
+                                <span class="metric-label">
+                                    Decision Threshold
+                                </span>
+
+                                <strong>
+                                    90%
+                                </strong>
+
+                            </div>
+
+
+                            <div class="metric">
+
+                                <span class="metric-label">
+                                    Model
+                                </span>
+
+                                <strong>
+                                    Random Forest
+                                </strong>
+
+                            </div>
+
+
+                            <div class="metric">
+
+                                <span class="metric-label">
+                                    Analysis
+                                </span>
+
+                                <strong>
+                                    AI Assisted
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                {% else %}
+
+                    <div class="empty-result">
+
+                        <div class="empty-icon">
+                            ◉
+                        </div>
+
+                        <h3>
+                            Waiting for Analysis
+                        </h3>
+
+                        <p>
+                            Enter the behavioral telemetry
+                            values and click
+                            <strong>Analyze with AI</strong>
+                            to generate a prediction.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% if error %}
+
+                    <div class="error-box">
+
+                        <strong>
+                            Analysis Error
+                        </strong>
+
+                        <p>
+                            {{ error }}
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+
+        <section class="info-section">
+
+            <div class="info-card">
+
+                <div class="info-number">
+                    01
+                </div>
+
+                <div>
+
+                    <h3>
+                        Eye Gaze Analysis
+                    </h3>
+
+                    <p>
+                        Evaluates gaze-related behavioral
+                        telemetry and its 10-second rolling
+                        pattern.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <div class="info-number">
+                    02
+                </div>
+
+                <div>
+
+                    <h3>
+                        Audio Monitoring
+                    </h3>
+
+                    <p>
+                        Uses audio-level telemetry to identify
+                        unusual activity patterns.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <div class="info-number">
+                    03
+                </div>
+
+                <div>
+
+                    <h3>
+                        Tab Activity
+                    </h3>
+
+                    <p>
+                        Considers tab-switching behavior as
+                        an additional examination signal.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="info-card">
+
+                <div class="info-number">
+                    04
+                </div>
+
+                <div>
+
+                    <h3>
+                        AI Decision
+                    </h3>
+
+                    <p>
+                        Random Forest probabilities are evaluated
+                        using a 90% decision threshold.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="disclaimer">
+
+            <span>ⓘ</span>
+
+            <p>
+                EduGuard AI is a decision-support system.
+                AI predictions should not be treated as definitive
+                proof of academic misconduct. Suspicious cases
+                should be reviewed by an authorized human examiner.
+            </p>
+
+        </div>
+
+    </main>
+
+
+    <footer>
+
+        <p>
+            © 2026 EduGuard AI
+        </p>
+
+        <p>
+            AI-Powered Examination Integrity
+        </p>
+
+    </footer>
+
+</body>
+
+</html>
